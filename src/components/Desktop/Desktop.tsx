@@ -6,6 +6,7 @@ import ProjectsWindow from '../Windows/ProjectsWindow';
 import ContactWindow from '../Windows/ContactWindow';
 import TerminalWindow from '../Windows/TerminalWindow';
 import HackingToolWindow from '../Windows/HackingToolWindow';
+import SkillsWindow from '../Windows/SkillsWindow';
 import { Terminal, User, Code, Mail, FileText, Shield } from 'lucide-react';
 import { useWindowContext } from '../context/WindowContext';
 import MatrixRain from '../Effects/MatrixRain';
@@ -171,6 +172,7 @@ const Desktop: React.FC = () => {
       {openWindows.includes('projects') && !minimizedWindows.includes('projects') && <ProjectsWindow />}
       {openWindows.includes('terminal') && !minimizedWindows.includes('terminal') && <TerminalWindow />}
       {openWindows.includes('contact') && !minimizedWindows.includes('contact') && <ContactWindow />}
+      {openWindows.includes('skills') && !minimizedWindows.includes('skills') && <SkillsWindow />}
       {openWindows.includes('network-scanner') && !minimizedWindows.includes('network-scanner') && <HackingToolWindow />}
     </div>
   );
