@@ -15,7 +15,7 @@ const AboutWindow: React.FC = () => {
         
         <div className="mb-6">
           <p className="mb-3">
-            Hello! I'm a passionate web developer with a strong interest in cybersecurity and ethical hacking.
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi lacinia massa sapien, non tincidunt eros eleifend feugiat. Donec maximus nulla id vulputate molestie.
           </p>
           <p className="mb-3">
             My journey in technology began with building simple websites, which evolved into a deep fascination 

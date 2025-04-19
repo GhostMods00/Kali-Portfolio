@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import DesktopIcon from './DesktopIcon';
 import Taskbar from './Taskbar';
-// Update path to match your file structure
 import AboutWindow from '../Windows/AboutWindow';
 import ProjectsWindow from '../Windows/ProjectsWindow';
 import ContactWindow from '../Windows/ContactWindow';
@@ -9,19 +8,84 @@ import TerminalWindow from '../Windows/TerminalWindow';
 import HackingToolWindow from '../Windows/HackingToolWindow';
 import { Terminal, User, Code, Mail, FileText, Shield } from 'lucide-react';
 import { useWindowContext } from '../context/WindowContext';
+import MatrixRain from '../Effects/MatrixRain';
+import ScrambleText from '../Effects/ScrambleText';
+
+// Kali wallpapers can be added to public folder or imported
+const WALLPAPERS = [
+  '/wallpapers/kali-fractal-blue.png',    // Only this wallpaper will load, to change rearrange the order of the wallpapers. only first will load
+  '/wallpapers/kali-linux-4k.png',
+  '/wallpapers/kali-dark-grid.jpg',
+  
+  
+  
+];
 
 const Desktop: React.FC = () => {
   const { openWindows, minimizedWindows, openWindow } = useWindowContext();
+  const [wallpaper, setWallpaper] = useState(WALLPAPERS[0]);
+  const [showBootSequence, setShowBootSequence] = useState(true);
+  const [bootStep, setBootStep] = useState(0);
+
+  // Simulate boot sequence
+  useEffect(() => {
+    if (showBootSequence) {
+      const bootTimer = setTimeout(() => {
+        if (bootStep < 3) {
+          setBootStep(bootStep + 1);
+        } else {
+          setShowBootSequence(false);
+        }
+      }, 1000);
+      return () => clearTimeout(bootTimer);
+    }
+  }, [bootStep, showBootSequence]);
+
+  // Boot sequence screen
+  if (showBootSequence) {
+    return (
+      <div className="h-screen bg-black flex flex-col items-center justify-center text-green-500 font-mono">
+        <div className="mb-8">
+          <ScrambleText 
+            text="KALI LINUX PORTFOLIO OS" 
+            speed={100} 
+            className="text-3xl mb-2"
+          />
+          <div className="flex space-x-2 justify-center">
+            <div className={`h-2 w-2 rounded-full ${bootStep >= 0 ? 'bg-green-500' : 'bg-gray-700'}`}></div>
+            <div className={`h-2 w-2 rounded-full ${bootStep >= 1 ? 'bg-green-500' : 'bg-gray-700'}`}></div>
+            <div className={`h-2 w-2 rounded-full ${bootStep >= 2 ? 'bg-green-500' : 'bg-gray-700'}`}></div>
+            <div className={`h-2 w-2 rounded-full ${bootStep >= 3 ? 'bg-green-500' : 'bg-gray-700'}`}></div>
+          </div>
+        </div>
+        
+        <div className="w-96 text-sm text-left">
+          <ScrambleText text="[OK] Loading kernel modules..." speed={10} delay={200} />
+          <ScrambleText text="[OK] Initializing network interfaces..." speed={10} delay={600} />
+          <ScrambleText text="[OK] Starting system services..." speed={10} delay={1200} />
+          <ScrambleText text="[OK] Loading desktop environment..." speed={10} delay={1800} />
+          <div className={`mt-4 ${bootStep >= 2 ? 'visible' : 'invisible'}`}>
+            <span className="text-blue-400">kali@portfolio</span>:
+            <span className="text-purple-400">~</span>$ <span className="animate-pulse">_</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="h-screen bg-kali-dark text-kali-accent font-mono overflow-hidden relative">
-      {/* Desktop Background with Grid Pattern */}
-      <div className="absolute inset-0 bg-kali-dark z-0">
-        <div className="grid grid-cols-12 grid-rows-6 h-full w-full opacity-5">
-          {Array(72).fill(0).map((_, i) => (
-            <div key={i} className="border border-kali-accent"></div>
-          ))}
-        </div>
+    <div className="h-screen overflow-hidden relative">
+      {/* Wallpaper */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center z-0"
+        style={{ backgroundImage: `url(${wallpaper})` }}
+      >
+        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+      </div>
+      
+      {/* Matrix Rain Effect in background */}
+      <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
+        <MatrixRain />
       </div>
       
       {/* Taskbar at the top */}
@@ -59,6 +123,20 @@ const Desktop: React.FC = () => {
           icon={<Shield size={32} className="text-purple-400" />} 
           onClick={() => openWindow('network-scanner')} 
         />
+      </div>
+      
+      {/* Desktop Clock with Date */}
+      <div className="absolute bottom-6 right-6 text-white text-right opacity-80 font-mono">
+        <ScrambleText
+          text={new Date().toLocaleTimeString()}
+          speed={100}
+          delay={0}
+          className="text-3xl"
+          autoRefresh={1000}
+        />
+        <div className="text-sm">
+          {new Date().toLocaleDateString()}
+        </div>
       </div>
       
       {/* Windows */}

@@ -26,7 +26,7 @@ const HackingToolWindow: React.FC = () => {
   
   // Predefined sample data
   const sampleHosts: Host[] = [
-    { ip: '192.168.1.1', type: 'Router', status: 'Online', ports: [80, 443, 22] },
+    { ip: '192.168.1.1', type: 'Ghost', status: 'Online', ports: [80, 443, 22] },
     { ip: '192.168.1.10', type: 'Server', status: 'Online', ports: [21, 22, 80, 443, 3306] },
     { ip: '192.168.1.15', type: 'Workstation', status: 'Online', ports: [139, 445, 3389] },
     { ip: '192.168.1.20', type: 'IoT Device', status: 'Online', ports: [80, 8080, 1883] },
@@ -101,6 +101,7 @@ const HackingToolWindow: React.FC = () => {
         <div className="flex flex-col h-full">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl text-purple-400 font-mono">// Network Vulnerability Scanner</h2>
+            <h3 className="text-xl text-green-200 font-mono">Made by Waleed</h3>
             <button
               onClick={startScan}
               disabled={scanStatus === 'scanning'}
