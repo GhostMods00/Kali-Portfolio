@@ -24,8 +24,11 @@ const Desktop: React.FC = () => {
         </div>
       </div>
       
-      {/* Desktop Icons */}
-      <div className="absolute top-4 left-4 flex flex-col space-y-6 z-10">
+      {/* Taskbar at the top */}
+      <Taskbar />
+      
+      {/* Desktop Icons - Adjusted top position to account for taskbar */}
+      <div className="absolute top-14 left-4 flex flex-col space-y-6 z-10">
         <DesktopIcon 
           label="About.sh" 
           icon={<User size={32} className="text-blue-400" />} 
@@ -64,9 +67,6 @@ const Desktop: React.FC = () => {
       {openWindows.includes('terminal') && !minimizedWindows.includes('terminal') && <TerminalWindow />}
       {openWindows.includes('contact') && !minimizedWindows.includes('contact') && <ContactWindow />}
       {openWindows.includes('network-scanner') && !minimizedWindows.includes('network-scanner') && <HackingToolWindow />}
-      
-      {/* Taskbar */}
-      <Taskbar />
     </div>
   );
 };
