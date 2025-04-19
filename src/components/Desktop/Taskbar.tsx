@@ -1,11 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Terminal, Code, User, Mail, FileText, Monitor, Shield, ChevronDown, Power, Settings, Coffee, HardDrive } from 'lucide-react';
+import { Terminal, Code, User, Mail, FileText, Monitor, Shield, ChevronDown, Power, Settings, Coffee, HardDrive, Image } from 'lucide-react';
 import { useWindowContext, WindowType } from '../context/WindowContext';
 
-const Taskbar: React.FC = () => {
+// Wallpaper options - same as in Desktop component for consistency
+const WALLPAPERS = [
+  '/wallpapers/kali-fractal-blue.png',
+  '/wallpapers/kali-dark-grid.jpg',
+  '/wallpapers/kali-linux-4kwaves.png'
+];
+
+export interface TaskbarProps {
+  onChangeWallpaper: (wallpaperPath: string) => void;
+  currentWallpaper: string;
+}
+
+const Taskbar: React.FC<TaskbarProps> = ({ onChangeWallpaper, currentWallpaper }) => {
   const [time, setTime] = useState(new Date());
   const { openWindow, openWindows, activeWindow, minimizedWindows } = useWindowContext();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [wallpaperMenuOpen, setWallpaperMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   
   // Update clock every second
@@ -13,7 +26,7 @@ const Taskbar: React.FC = () => {
     const timer = setInterval(() => {
       setTime(new Date());
     }, 1000);
-    return () => clearInterval(timer);
+    return () => clearTimeout(timer);
   }, []);
   
   // CPU and RAM usage simulation
@@ -34,6 +47,7 @@ const Taskbar: React.FC = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
+        setWallpaperMenuOpen(false);
       }
     };
 
@@ -61,6 +75,14 @@ const Taskbar: React.FC = () => {
     } else {
       openWindow(windowType);
     }
+  };
+
+  // Get wallpaper name for display
+  const getWallpaperName = (path: string) => {
+    // Extract filename without extension
+    const filename = path.split('/').pop()?.split('.')[0] || path;
+    // Convert to title case and replace hyphens with spaces
+    return filename.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   };
 
   return (
@@ -91,7 +113,10 @@ const Taskbar: React.FC = () => {
               <div className="text-xs text-gray-400">root@kali</div>
             </div>
             <div className="py-1">
-              <button className="flex items-center px-4 py-2 text-sm text-white hover:bg-gray-800 w-full text-left">
+              <button 
+                className="flex items-center px-4 py-2 text-sm text-white hover:bg-gray-800 w-full text-left"
+                onClick={() => handleTaskbarIconClick('terminal')}
+              >
                 <Terminal size={16} className="mr-2 text-green-400" />
                 Terminal
               </button>
@@ -103,7 +128,46 @@ const Taskbar: React.FC = () => {
                 <HardDrive size={16} className="mr-2 text-purple-400" />
                 File Manager
               </button>
-              <button className="flex items-center px-4 py-2 text-sm text-white hover:bg-gray-800 w-full text-left">
+              <div className="relative">
+                <button 
+                  className="flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-gray-800 w-full text-left"
+                  onClick={() => setWallpaperMenuOpen(!wallpaperMenuOpen)}
+                >
+                  <div className="flex items-center">
+                    <Image size={16} className="mr-2 text-yellow-400" />
+                    Wallpaper
+                  </div>
+                  <ChevronDown size={14} />
+                </button>
+                
+                {wallpaperMenuOpen && (
+                  <div className="absolute left-full top-0 w-56 bg-gray-900 border border-gray-700 rounded shadow-lg">
+                    {WALLPAPERS.map((wp, index) => (
+                      <button 
+                        key={index}
+                        className={`flex items-center px-4 py-2 text-sm text-white hover:bg-gray-800 w-full text-left ${wp === currentWallpaper ? 'bg-gray-800' : ''}`}
+                        onClick={() => {
+                          onChangeWallpaper(wp);
+                          setWallpaperMenuOpen(false);
+                        }}
+                      >
+                        <div 
+                          className="w-6 h-6 mr-2 rounded border border-gray-600 bg-cover bg-center"
+                          style={{ backgroundImage: `url(${wp})` }}
+                        ></div>
+                        {getWallpaperName(wp)}
+                        {wp === currentWallpaper && (
+                          <span className="ml-2 text-green-400">✓</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button 
+                className="flex items-center px-4 py-2 text-sm text-white hover:bg-gray-800 w-full text-left"
+                onClick={() => handleTaskbarIconClick('about')}
+              >
                 <Coffee size={16} className="mr-2 text-yellow-400" />
                 About
               </button>

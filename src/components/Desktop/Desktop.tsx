@@ -11,14 +11,11 @@ import { useWindowContext } from '../context/WindowContext';
 import MatrixRain from '../Effects/MatrixRain';
 import ScrambleText from '../Effects/ScrambleText';
 
-// Kali wallpapers can be added to public folder or imported
-const WALLPAPERS = [
-  '/wallpapers/kali-fractal-blue.png',    // Only this wallpaper will load, to change rearrange the order of the wallpapers. only first will load
-  '/wallpapers/kali-linux-4k.png',
+// Kali wallpapers
+export const WALLPAPERS = [
+  '/wallpapers/kali-fractal-blue.png',    // Import actual Kali wallpapers
   '/wallpapers/kali-dark-grid.jpg',
-  
-  
-  
+  '/wallpapers/kali-linux-4kwaves.png'
 ];
 
 const Desktop: React.FC = () => {
@@ -26,6 +23,21 @@ const Desktop: React.FC = () => {
   const [wallpaper, setWallpaper] = useState(WALLPAPERS[0]);
   const [showBootSequence, setShowBootSequence] = useState(true);
   const [bootStep, setBootStep] = useState(0);
+
+  // Check localStorage for saved wallpaper preference
+  useEffect(() => {
+    const savedWallpaper = localStorage.getItem('kali-portfolio-wallpaper');
+    if (savedWallpaper && WALLPAPERS.includes(savedWallpaper)) {
+      setWallpaper(savedWallpaper);
+    }
+  }, []);
+
+  // Handle wallpaper change from Taskbar
+  const handleWallpaperChange = (newWallpaper: string) => {
+    setWallpaper(newWallpaper);
+    // Save preference to localStorage
+    localStorage.setItem('kali-portfolio-wallpaper', newWallpaper);
+  };
 
   // Simulate boot sequence
   useEffect(() => {
@@ -40,6 +52,18 @@ const Desktop: React.FC = () => {
       return () => clearTimeout(bootTimer);
     }
   }, [bootStep, showBootSequence]);
+
+  // Check localStorage to see if we should skip boot sequence
+  useEffect(() => {
+    // Check if user has seen the boot sequence before
+    const hasSeenBoot = localStorage.getItem('kali-boot-seen') === 'true';
+    if (hasSeenBoot) {
+      setShowBootSequence(false);
+    } else {
+      // Mark that the user has seen the boot sequence
+      localStorage.setItem('kali-boot-seen', 'true');
+    }
+  }, []);
 
   // Boot sequence screen
   if (showBootSequence) {
@@ -77,7 +101,7 @@ const Desktop: React.FC = () => {
     <div className="h-screen overflow-hidden relative">
       {/* Wallpaper */}
       <div 
-        className="absolute inset-0 bg-cover bg-center z-0"
+        className="absolute inset-0 bg-cover bg-center z-0 transition-all duration-700"
         style={{ backgroundImage: `url(${wallpaper})` }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-30"></div>
@@ -89,7 +113,10 @@ const Desktop: React.FC = () => {
       </div>
       
       {/* Taskbar at the top */}
-      <Taskbar />
+      <Taskbar 
+        onChangeWallpaper={handleWallpaperChange} 
+        currentWallpaper={wallpaper} 
+      />
       
       {/* Desktop Icons - Adjusted top position to account for taskbar */}
       <div className="absolute top-14 left-4 flex flex-col space-y-6 z-10">
