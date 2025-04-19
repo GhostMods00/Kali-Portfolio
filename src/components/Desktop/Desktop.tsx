@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import DesktopIcon from './DesktopIcon';
+import DesktopIcon, { 
+  KaliFolder, KaliTerminal, KaliCode, KaliUser, KaliMail, 
+  KaliShield, KaliFileText 
+} from './DesktopIcon';
 import Taskbar from './Taskbar';
 import AboutWindow from '../Windows/AboutWindow';
 import ProjectsWindow from '../Windows/ProjectsWindow';
@@ -7,34 +10,83 @@ import ContactWindow from '../Windows/ContactWindow';
 import TerminalWindow from '../Windows/TerminalWindow';
 import HackingToolWindow from '../Windows/HackingToolWindow';
 import SkillsWindow from '../Windows/SkillsWindow';
-import { Terminal, User, Code, Mail, FileText, Shield } from 'lucide-react';
 import { useWindowContext } from '../context/WindowContext';
 import MatrixRain from '../Effects/MatrixRain';
 import ScrambleText from '../Effects/ScrambleText';
 
-// Kali wallpapers
+// Kali wallpapers with both local and external options
 export const WALLPAPERS = [
-  '/wallpapers/kali-fractal-blue.png',    // Import actual Kali wallpapers
-  '/wallpapers/kali-dark-grid.jpg',
-  '/wallpapers/kali-linux-4kwaves.png'
+  // Include an external fallback wallpaper first
+  'https://www.kali.org/images/wallpapers-2019/kali-geometric-4x3.png',
+  // Then try local wallpapers
+  `${process.env.PUBLIC_URL}/wallpapers/kali-fractal-blue.png`,
+  `${process.env.PUBLIC_URL}/wallpapers/kali-dark-grid.jpg`,
+  `${process.env.PUBLIC_URL}/wallpapers/kali-linux-4kwaves.pngg`
 ];
+
+// Default fallback background
+const DEFAULT_BG = 'linear-gradient(to bottom, #1a2980, #26d0ce)';
 
 const Desktop: React.FC = () => {
   const { openWindows, minimizedWindows, openWindow } = useWindowContext();
-  const [wallpaper, setWallpaper] = useState(WALLPAPERS[0]);
+  const [wallpaper, setWallpaper] = useState<string | null>(null);
+  const [wallpaperLoaded, setWallpaperLoaded] = useState(false);
   const [showBootSequence, setShowBootSequence] = useState(true);
   const [bootStep, setBootStep] = useState(0);
 
-  // Check localStorage for saved wallpaper preference
+  // Load and check wallpapers
   useEffect(() => {
     const savedWallpaper = localStorage.getItem('kali-portfolio-wallpaper');
-    if (savedWallpaper && WALLPAPERS.includes(savedWallpaper)) {
-      setWallpaper(savedWallpaper);
-    }
+    console.log('Saved wallpaper from localStorage:', savedWallpaper);
+    
+    // Function to check if a wallpaper can be loaded
+    const checkWallpaper = async (wallpaperUrl: string): Promise<boolean> => {
+      if (!wallpaperUrl) return false;
+      
+      try {
+        const response = await fetch(wallpaperUrl, { method: 'HEAD' });
+        return response.ok;
+      } catch (error) {
+        console.warn(`Error checking wallpaper ${wallpaperUrl}:`, error);
+        return false;
+      }
+    };
+
+    const loadFirstAvailableWallpaper = async () => {
+      // First try the saved wallpaper if it exists
+      if (savedWallpaper) {
+        const savedWallpaperWorks = await checkWallpaper(savedWallpaper);
+        if (savedWallpaperWorks) {
+          console.log('Using saved wallpaper:', savedWallpaper);
+          setWallpaper(savedWallpaper);
+          setWallpaperLoaded(true);
+          return;
+        }
+      }
+      
+      // Otherwise, try each wallpaper in order until one works
+      for (const wp of WALLPAPERS) {
+        const wallpaperWorks = await checkWallpaper(wp);
+        if (wallpaperWorks) {
+          console.log('Found working wallpaper:', wp);
+          setWallpaper(wp);
+          setWallpaperLoaded(true);
+          return;
+        }
+      }
+      
+      // If none work, set to null to use default background
+      console.log('No wallpapers could be loaded, using default background');
+      setWallpaper(null);
+      setWallpaperLoaded(true);
+    };
+
+    loadFirstAvailableWallpaper();
   }, []);
 
   // Handle wallpaper change from Taskbar
   const handleWallpaperChange = (newWallpaper: string) => {
+    console.log('Changing wallpaper to:', newWallpaper);
     setWallpaper(newWallpaper);
     // Save preference to localStorage
     localStorage.setItem('kali-portfolio-wallpaper', newWallpaper);
@@ -98,12 +150,24 @@ const Desktop: React.FC = () => {
     );
   }
 
+  // Show loading while checking wallpapers
+  if (!wallpaperLoaded) {
+    return (
+      <div className="h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-white text-xl font-mono">Loading environment...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen overflow-hidden relative">
-      {/* Wallpaper */}
+      {/* Wallpaper or default background */}
       <div 
-        className="absolute inset-0 bg-cover bg-center z-0 transition-all duration-700"
-        style={{ backgroundImage: `url(${wallpaper})` }}
+        className="absolute inset-0 bg-gray-900 bg-cover bg-center z-0 transition-all duration-700"
+        style={wallpaper 
+          ? { backgroundImage: `url(${wallpaper})` }
+          : { background: DEFAULT_BG }
+        }
       >
         <div className="absolute inset-0 bg-black bg-opacity-30"></div>
       </div>
@@ -116,39 +180,39 @@ const Desktop: React.FC = () => {
       {/* Taskbar at the top */}
       <Taskbar 
         onChangeWallpaper={handleWallpaperChange} 
-        currentWallpaper={wallpaper} 
+        currentWallpaper={wallpaper || ''} 
       />
       
-      {/* Desktop Icons - Adjusted top position to account for taskbar */}
+      {/* Desktop Icons - Using Kali Linux style icons */}
       <div className="absolute top-14 left-4 flex flex-col space-y-6 z-10">
         <DesktopIcon 
           label="About.sh" 
-          icon={<User size={32} className="text-blue-400" />} 
+          icon={<KaliUser />} 
           onClick={() => openWindow('about')} 
         />
         <DesktopIcon 
           label="Projects.sh" 
-          icon={<Code size={32} className="text-yellow-400" />} 
+          icon={<KaliFolder />} 
           onClick={() => openWindow('projects')} 
         />
         <DesktopIcon 
           label="Terminal.sh" 
-          icon={<Terminal size={32} className="text-green-400" />} 
+          icon={<KaliTerminal />} 
           onClick={() => openWindow('terminal')} 
         />
         <DesktopIcon 
           label="Contact.sh" 
-          icon={<Mail size={32} className="text-red-400" />} 
+          icon={<KaliMail />} 
           onClick={() => openWindow('contact')} 
         />
         <DesktopIcon 
           label="Skills.sh" 
-          icon={<FileText size={32} className="text-purple-400" />} 
+          icon={<KaliFileText />} 
           onClick={() => openWindow('skills')} 
         />
         <DesktopIcon 
           label="NetScan.sh" 
-          icon={<Shield size={32} className="text-purple-400" />} 
+          icon={<KaliShield />} 
           onClick={() => openWindow('network-scanner')} 
         />
       </div>
